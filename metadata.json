@@ -1,0 +1,8 @@
+{
+  "name": "Remix KelolaYuk",
+  "description": "Mindful financial wellness platform with cash flow tracking, 50/30/20 budgeting, savings targets, financial calculators, Money Academy, and bill reminders.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
