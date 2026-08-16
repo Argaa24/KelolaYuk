@@ -1,11 +1,23 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', sans-serif;
     background-color: #f4faff;
     color: #0e1d25;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
+
+  html.dark body {
+    background-color: #0e171b;
+    color: #e2e8f0;
+  }
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 .glass-panel {
@@ -22,6 +34,95 @@
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(224, 240, 251, 0.6);
   box-shadow: 0px 10px 30px rgba(47, 62, 70, 0.05);
+}
+
+/* Glass panel and glass card in dark mode */
+html.dark .glass-panel {
+  background: rgba(20, 31, 36, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+html.dark .glass-card {
+  background: rgba(26, 39, 46, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Dark mode utility overrides for containers and cards */
+html.dark aside {
+  background-color: #141f24 !important;
+  border-color: #28373f !important;
+}
+
+html.dark header {
+  background-color: rgba(20, 31, 36, 0.9) !important;
+  border-color: #28373f !important;
+}
+
+html.dark input[type="text"],
+html.dark input[type="number"],
+html.dark input[type="date"],
+html.dark input[type="email"],
+html.dark input[type="password"],
+html.dark select,
+html.dark textarea {
+  background-color: #17242a !important;
+  color: #f1f5f9 !important;
+  border-color: #2c3e46 !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #727970 !important;
+}
+
+/* Modal and popover dark backgrounds */
+html.dark .bg-white {
+  background-color: #162228 !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark .bg-\[\#f4faff\],
+html.dark .bg-\[\#f4f8f5\],
+html.dark .bg-\[\#faf8f5\],
+html.dark .bg-\[\#e7f6ff\],
+html.dark .bg-\[\#f8fafc\] {
+  background-color: #1a282f !important;
+}
+
+html.dark .text-\[\#0e1d25\] {
+  color: #f1f5f9 !important;
+}
+
+html.dark .text-\[\#424940\] {
+  color: #a0aec0 !important;
+}
+
+html.dark .border-\[\#d5e5ef\],
+html.dark .border-\[\#c2c9be\],
+html.dark .border-\[\#e2e8f0\] {
+  border-color: #28373f !important;
+}
+
+html.dark .text-\[\#3e6842\] {
+  color: #8fbc8f !important;
+}
+
+html.dark input[type="range"]::-webkit-slider-runnable-track {
+  background: #28373f;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #28373f;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3e535e;
 }
 
 .material-symbols-outlined {

@@ -1,0 +1,83 @@
+{
+  "entities": {
+    "users": {
+      "title": "User Profile",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Full name of the user" },
+        "email": { "type": "string", "format": "email", "description": "Email address" },
+        "avatarUrl": { "type": "string", "description": "Profile picture URL" },
+        "title": { "type": "string", "description": "User financial persona title" },
+        "level": { "type": "string", "description": "User tier or status level" },
+        "createdAt": { "type": "string", "description": "Account creation timestamp" },
+        "updatedAt": { "type": "string", "description": "Last profile update timestamp" }
+      },
+      "required": ["name", "email"]
+    },
+    "transactions": {
+      "title": "Financial Transaction",
+      "description": "Income or expense record",
+      "type": "object",
+      "properties": {
+        "description": { "type": "string", "description": "Description of the transaction" },
+        "category": { "type": "string", "description": "Category of income or expense" },
+        "type": { "type": "string", "enum": ["income", "expense"], "description": "Transaction type" },
+        "amount": { "type": "number", "description": "Monetary amount in Rupiah" },
+        "date": { "type": "string", "description": "Transaction date" },
+        "notes": { "type": "string", "description": "Optional notes" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["description", "category", "type", "amount", "date"]
+    },
+    "goals": {
+      "title": "Savings Goal",
+      "description": "Savings target and tracking",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Goal name" },
+        "targetDescription": { "type": "string", "description": "Description" },
+        "targetAmount": { "type": "number", "description": "Target target amount" },
+        "currentAmount": { "type": "number", "description": "Current saved amount" },
+        "categoryIcon": { "type": "string", "description": "Icon identifier" },
+        "estimatedDate": { "type": "string", "description": "Target date" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["title", "targetAmount", "currentAmount"]
+    },
+    "bills": {
+      "title": "Bill Reminder",
+      "description": "Scheduled bill or payment reminder",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Bill name" },
+        "amount": { "type": "number", "description": "Bill amount" },
+        "dueDate": { "type": "string", "description": "Due date" },
+        "category": { "type": "string", "description": "Category" },
+        "reminderEnabled": { "type": "boolean", "description": "Whether reminder is active" },
+        "isPaid": { "type": "boolean", "description": "Payment status" },
+        "paidDate": { "type": "string", "description": "Paid date if fulfilled" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["name", "amount", "dueDate", "isPaid"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "users",
+      "description": "User profile document"
+    },
+    "users/{userId}/transactions/{transactionId}": {
+      "schema": "transactions",
+      "description": "User's financial transactions"
+    },
+    "users/{userId}/goals/{goalId}": {
+      "schema": "goals",
+      "description": "User's savings goals"
+    },
+    "users/{userId}/bills/{billId}": {
+      "schema": "bills",
+      "description": "User's bill reminders"
+    }
+  }
+}

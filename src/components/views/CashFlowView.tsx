@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
+import { EditBalanceModal } from '../modals/EditBalanceModal';
 import {
   ResponsiveContainer,
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -48,9 +49,15 @@ const parseDateSafely = (dateStr: string): Date | null => {
 export const CashFlowView: React.FC = () => {
   const { totalBalance, transactions, setIsAddTxOpen, deleteTransaction } = useApp();
   const [filterMonth, setFilterMonth] = useState<'month' | 'week' | 'all'>('month');
+  const [isEditBalanceOpen, setIsEditBalanceOpen] = useState(false);
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
+
+  const hasTransactions = transactions.length > 0;
 
   const cashFlowData = useMemo(() => {
-    if (transactions.length === 0) return [];
+    if (!hasTransactions) {
+      return [];
+    }
 
     if (filterMonth === 'week') {
       const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
@@ -116,24 +123,26 @@ export const CashFlowView: React.FC = () => {
       Pemasukan: map[w].income,
       Pengeluaran: map[w].expense
     }));
-  }, [transactions, filterMonth]);
+  }, [transactions, filterMonth, hasTransactions]);
 
-  const hasData = transactions.length > 0 && cashFlowData.some(d => d.Pemasukan > 0 || d.Pengeluaran > 0);
+  const displayedTransactions = showAllTransactions 
+    ? transactions 
+    : transactions.slice(0, 5);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300 pb-16">
+    <div className="space-y-6 animate-in fade-in duration-300 pb-16">
       {/* Header Controls */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-[#0e1d25]">Arus Kas</h2>
-          <p className="text-xs md:text-sm text-[#424940] mt-0.5">Pantau pergerakan uang Anda berdasarkan transaksi.</p>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0e1d25] dark:text-[#f1f5f9] tracking-tight">Arus Kas</h2>
+          <p className="text-xs sm:text-sm text-[#424940] dark:text-[#a0aec0] mt-0.5">Pantau pergerakan uang Anda bulan ini.</p>
         </div>
 
         <div className="flex items-center gap-3 w-full md:w-auto">
           <select 
             value={filterMonth}
             onChange={(e) => setFilterMonth(e.target.value as any)}
-            className="bg-white rounded-xl px-4 py-2.5 text-xs md:text-sm font-semibold text-[#0e1d25] border border-[#c2c9be] outline-none cursor-pointer focus:border-[#3e6842]"
+            className="bg-white dark:bg-[#142026] rounded-xl px-4 py-2.5 text-xs md:text-sm font-semibold text-[#0e1d25] dark:text-[#f1f5f9] border border-[#c2c9be] dark:border-[#28373f] outline-none cursor-pointer focus:border-[#3e6842]"
           >
             <option value="month">Tampilan Per Minggu (Bulan Ini)</option>
             <option value="week">Tampilan Per Hari (Minggu Ini)</option>
@@ -141,7 +150,7 @@ export const CashFlowView: React.FC = () => {
 
           <button
             onClick={() => setIsAddTxOpen(true)}
-            className="bg-[#3e6842] text-white font-bold text-xs md:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-md hover:bg-[#3e6842]/90 active:scale-98 transition-all shrink-0 cursor-pointer"
+            className="bg-[#3e6842] hover:bg-[#3e6842]/90 text-white font-bold text-xs md:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-md shadow-[#3e6842]/20 active:scale-98 transition-all shrink-0 cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
             <span>Tambah Transaksi</span>
@@ -149,126 +158,163 @@ export const CashFlowView: React.FC = () => {
         </div>
       </div>
 
-      {/* Bento Grid */}
+      {/* Top Bento Grid (Saldo Card + Tren Arus Kas Chart) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Total Balance Card */}
-        <div className="lg:col-span-4 glass-panel rounded-2xl p-6 md:p-8 flex flex-col justify-between shadow-xs relative overflow-hidden group">
-          <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#8fbc8f]/10 rounded-full blur-2xl group-hover:bg-[#8fbc8f]/20 transition-colors duration-700"></div>
+        {/* Total Saldo Saat Ini Card */}
+        <div className="lg:col-span-5 bg-[#18391e] dark:bg-[#132c18] rounded-[32px] p-6 sm:p-8 flex flex-col justify-between shadow-lg relative overflow-hidden group min-h-[250px]">
+          {/* Subtle Ambient Background Light */}
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#4ade80]/10 rounded-full blur-3xl pointer-events-none"></div>
+
           <div>
-            <h3 className="font-medium text-xs md:text-sm text-[#424940] mb-2">Total Saldo Saat Ini</h3>
-            <div className="text-3xl md:text-4xl font-bold text-[#0e1d25] tracking-tight">
-              Rp {new Intl.NumberFormat('id-ID').format(totalBalance)}
+            {/* Top Row: Title and Ubah Saldo Button */}
+            <div className="flex items-center justify-between gap-2 mb-8">
+              <span className="text-[11px] sm:text-xs font-bold text-white/90 tracking-wider uppercase">
+                TOTAL SALDO SAAT INI
+              </span>
+
+              <button
+                onClick={() => setIsEditBalanceOpen(true)}
+                className="bg-white/10 hover:bg-white/20 border border-white/25 text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer backdrop-blur-xs active:scale-95 shadow-xs"
+                title="Sesuaikan Saldo Kas"
+              >
+                <span className="material-symbols-outlined text-[16px]">edit_square</span>
+                <span>Ubah Saldo</span>
+              </button>
+            </div>
+
+            {/* Middle: Rp Currency & Balance Amount */}
+            <div className="flex items-baseline flex-wrap gap-2.5 my-2">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#4ade80]">
+                Rp
+              </span>
+              <span className="text-3xl sm:text-4xl lg:text-[40px] font-extrabold text-white tracking-tight leading-none">
+                {new Intl.NumberFormat('id-ID').format(totalBalance)}
+              </span>
             </div>
           </div>
-          <div className="mt-8 flex items-center gap-2 text-[#3e6842]">
-            <span className="material-symbols-outlined bg-[#8fbc8f]/20 rounded-full p-1 text-[16px]">
-              account_balance_wallet
-            </span>
-            <span className="font-bold text-xs">Akurat sesuai pencatatan</span>
+
+          {/* Bottom Badge: +12.5% dari bulan lalu */}
+          <div className="mt-8 pt-2">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-white/95 text-xs font-medium shadow-xs backdrop-blur-xs">
+              <span className="material-symbols-outlined text-[16px]">trending_up</span>
+              <span>+12.5% dari bulan lalu</span>
+            </div>
           </div>
         </div>
 
-        {/* Cash Flow Chart */}
-        <div className="lg:col-span-8 glass-panel rounded-2xl p-6 md:p-8 shadow-xs flex flex-col relative overflow-hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 relative z-10">
-            <h3 className="font-bold text-lg text-[#0e1d25]">Tren Arus Kas</h3>
-            <div className="flex gap-4 font-semibold text-xs">
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-[#3e6842]"></div> Pemasukan
+        {/* Tren Arus Kas Chart Card */}
+        <div className="lg:col-span-7 bg-white dark:bg-[#142026] rounded-[32px] p-6 sm:p-8 shadow-sm border border-[#d5e5ef] dark:border-[#28373f] flex flex-col justify-between relative overflow-hidden min-h-[250px]">
+          {/* Header & Legend */}
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <h3 className="font-extrabold text-lg sm:text-xl text-[#0e1d25] dark:text-[#f1f5f9] tracking-tight">
+              Tren Arus Kas
+            </h3>
+            
+            {hasTransactions && (
+              <div className="flex items-center gap-4 font-semibold text-xs sm:text-sm">
+                <div className="flex items-center gap-1.5 text-[#2e7d32] dark:text-[#4ade80]">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#1e5627] dark:bg-[#4ade80] inline-block"></span>
+                  <span>Pemasukan</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-[#d32f2f] dark:text-[#f87171]">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#d32f2f] dark:bg-[#f87171] inline-block"></span>
+                  <span>Pengeluaran</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-[#ba1a1a]"></div> Pengeluaran
-              </div>
-            </div>
-          </div>
-
-          <div className="flex-1 min-h-[220px] relative w-full pt-2">
-            {!hasData ? (
-              <div className="h-full min-h-[200px] flex flex-col items-center justify-center text-[#727970] p-6 text-center bg-[#f4f8f5]/50 rounded-2xl border border-dashed border-[#c2c9be]">
-                <span className="material-symbols-outlined text-[36px] text-[#8fbc8f] mb-2">trending_up</span>
-                <p className="text-xs font-bold text-[#0e1d25]">Belum Ada Data Arus Kas</p>
-                <p className="text-[11px] text-[#727970] mt-1 max-w-xs">
-                  Grafik tren pemasukan & pengeluaran akan otomatis terbentuk dari transaksi yang Anda tambahkan.
-                </p>
-                <button
-                  onClick={() => setIsAddTxOpen(true)}
-                  className="mt-3 text-xs font-bold text-[#3e6842] bg-[#8fbc8f]/20 hover:bg-[#8fbc8f]/30 px-3.5 py-1.5 rounded-lg transition-colors inline-flex items-center gap-1"
-                >
-                  <span className="material-symbols-outlined text-[16px]">add</span>
-                  Tambah Transaksi Pertama
-                </button>
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height={220}>
-                <AreaChart data={cashFlowData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3e6842" stopOpacity={0.4}/>
-                      <stop offset="95%" stopColor="#3e6842" stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="expenseGradientCash" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#ba1a1a" stopOpacity={0.4}/>
-                      <stop offset="95%" stopColor="#ba1a1a" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                  <XAxis 
-                    dataKey="name" 
-                    tick={{ fontSize: 11, fill: '#424940', fontWeight: 600 }} 
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis 
-                    tick={{ fontSize: 10, fill: '#727970' }} 
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(val) => val >= 1000000 ? `${(val/1000000).toFixed(1)}M` : val >= 1000 ? `${(val/1000).toFixed(0)}rb` : val}
-                  />
-                  <Tooltip content={<CashFlowTooltip />} />
-                  <Area 
-                    type="monotone" 
-                    dataKey="Pemasukan" 
-                    stroke="#3e6842" 
-                    strokeWidth={2.5} 
-                    fillOpacity={1} 
-                    fill="url(#incomeGradient)" 
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="Pengeluaran" 
-                    stroke="#ba1a1a" 
-                    strokeWidth={2.5} 
-                    fillOpacity={1} 
-                    fill="url(#expenseGradientCash)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
             )}
           </div>
+
+          {/* Line Chart or Empty State */}
+          {!hasTransactions ? (
+            <div className="flex-1 w-full min-h-[190px] flex flex-col items-center justify-center text-center p-6 bg-[#f8faf9] dark:bg-[#101b20] rounded-2xl border border-dashed border-[#c2d6c8] dark:border-[#28373f]">
+              <div className="w-12 h-12 rounded-2xl bg-[#8fbc8f]/20 text-[#3e6842] dark:text-[#8fbc8f] flex items-center justify-center mb-2.5">
+                <span className="material-symbols-outlined text-[26px]">show_chart</span>
+              </div>
+              <p className="text-xs sm:text-sm font-bold text-[#0e1d25] dark:text-[#f1f5f9]">
+                Belum Ada Data Tren Arus Kas
+              </p>
+              <p className="text-[11px] sm:text-xs text-[#727970] dark:text-[#8a99a8] mt-1 max-w-xs leading-relaxed">
+                Grafik visualisasi pemasukan & pengeluaran akan langsung tampil otomatis setelah Anda menambahkan transaksi.
+              </p>
+              <button
+                onClick={() => setIsAddTxOpen(true)}
+                className="mt-3.5 bg-[#3e6842] hover:bg-[#3e6842]/90 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs inline-flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
+              >
+                <span className="material-symbols-outlined text-[16px]">add</span>
+                <span>Tambah Transaksi Baru</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex-1 w-full h-[190px] pt-1">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={cashFlowData} margin={{ top: 10, right: 15, left: -15, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-[#23333c]" />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }} 
+                    axisLine={false}
+                    tickLine={false}
+                    dy={6}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 11, fill: '#64748b', fontWeight: 500 }} 
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(val) => {
+                      if (val >= 1000000) return `${(val / 1000000).toFixed(0)}M`;
+                      if (val >= 1000) return `${(val / 1000).toFixed(0)}k`;
+                      return String(val);
+                    }}
+                  />
+                  <Tooltip content={<CashFlowTooltip />} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="Pemasukan" 
+                    stroke="#1e5627" 
+                    strokeWidth={3} 
+                    dot={false}
+                    activeDot={{ r: 6, fill: '#1e5627', stroke: '#ffffff', strokeWidth: 2 }} 
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="Pengeluaran" 
+                    stroke="#d32f2f" 
+                    strokeWidth={3} 
+                    dot={false}
+                    activeDot={{ r: 6, fill: '#d32f2f', stroke: '#ffffff', strokeWidth: 2 }} 
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Transactions Table */}
-      <section className="glass-panel rounded-2xl p-6 md:p-8 shadow-xs">
+      {/* Transaksi Terakhir Card */}
+      <section className="bg-white dark:bg-[#142026] rounded-[32px] p-6 sm:p-8 shadow-sm border border-[#d5e5ef] dark:border-[#28373f]">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="font-bold text-lg md:text-xl text-[#0e1d25]">Transaksi Terakhir</h3>
-          <span className="text-xs text-[#727970]">{transactions.length} total transaksi</span>
+          <h3 className="font-extrabold text-xl text-[#0e1d25] dark:text-[#f1f5f9] tracking-tight">
+            Transaksi Terakhir
+          </h3>
+          <span className="text-xs font-semibold text-[#727970] dark:text-[#8a99a8]">
+            {transactions.length} total transaksi
+          </span>
         </div>
 
         {transactions.length === 0 ? (
-          <div className="py-12 text-center text-[#727970] space-y-3">
-            <div className="w-16 h-16 rounded-full bg-[#8fbc8f]/20 text-[#3e6842] flex items-center justify-center mx-auto">
-              <span className="material-symbols-outlined text-[32px]">payments</span>
+          <div className="py-10 text-center text-[#727970] dark:text-[#8a99a8] space-y-3">
+            <div className="w-14 h-14 rounded-2xl bg-[#8fbc8f]/20 text-[#3e6842] dark:text-[#8fbc8f] flex items-center justify-center mx-auto">
+              <span className="material-symbols-outlined text-[28px]">payments</span>
             </div>
-            <p className="font-bold text-base text-[#0e1d25]">Belum Ada Transaksi Recorded</p>
-            <p className="text-xs text-[#727970] max-w-sm mx-auto">
-              Catat pemasukan dan pengeluaran pertamamu untuk mulai menghitung arus kas dari 0.
+            <p className="font-bold text-sm text-[#0e1d25] dark:text-[#f1f5f9]">Belum Ada Transaksi Tercatat</p>
+            <p className="text-xs text-[#727970] dark:text-[#8a99a8] max-w-sm mx-auto">
+              Catat pemasukan atau pengeluaran pertama Anda untuk memantau arus kas secara berkala.
             </p>
             <button
               onClick={() => setIsAddTxOpen(true)}
-              className="mt-2 bg-[#3e6842] text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md hover:bg-[#3e6842]/90 inline-flex items-center gap-2"
+              className="mt-2 bg-[#3e6842] text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md hover:bg-[#3e6842]/90 inline-flex items-center gap-1.5 cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[18px]">add</span>
+              <span className="material-symbols-outlined text-[16px]">add</span>
               <span>Catat Transaksi Pertama</span>
             </button>
           </div>
@@ -276,37 +322,37 @@ export const CashFlowView: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[600px]">
               <thead>
-                <tr className="border-b border-[#c2c9be]/40 text-[#727970] font-semibold text-xs">
-                  <th className="pb-3 pl-2">Tanggal</th>
-                  <th className="pb-3">Deskripsi</th>
-                  <th className="pb-3">Kategori</th>
-                  <th className="pb-3 text-right pr-2">Jumlah</th>
-                  <th className="pb-3 text-center">Aksi</th>
+                <tr className="border-b border-[#e2e8f0] dark:border-[#28373f] text-[#727970] dark:text-[#8a99a8] font-bold text-[11px] tracking-wider uppercase">
+                  <th className="pb-3 pl-2">TANGGAL</th>
+                  <th className="pb-3">DESKRIPSI</th>
+                  <th className="pb-3">KATEGORI</th>
+                  <th className="pb-3 text-right pr-2">JUMLAH</th>
+                  <th className="pb-3 text-center w-16">AKSI</th>
                 </tr>
               </thead>
-              <tbody className="text-xs md:text-sm">
-                {transactions.map(tx => (
-                  <tr key={tx.id} className="border-b border-[#c2c9be]/20 hover:bg-[#d5e5ef]/30 transition-colors">
-                    <td className="text-[#727970] pl-2 py-4 font-medium">{tx.date}</td>
-                    <td className="text-[#0e1d25] font-semibold py-4">{tx.description}</td>
+              <tbody className="text-xs sm:text-sm">
+                {displayedTransactions.map(tx => (
+                  <tr key={tx.id} className="border-b border-[#f1f5f9] dark:border-[#1e2d34] hover:bg-[#f8fafc] dark:hover:bg-[#18262d] transition-colors">
+                    <td className="text-[#64748b] dark:text-[#8a99a8] pl-2 py-4 font-medium">{tx.date}</td>
+                    <td className="text-[#0e1d25] dark:text-[#f1f5f9] font-bold py-4">{tx.description}</td>
                     <td className="py-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold inline-block ${
                         tx.type === 'income' 
-                          ? 'bg-[#8fbc8f]/20 text-[#3e6842]' 
-                          : 'bg-[#e1dfdc] text-[#5e5e5c]'
+                          ? 'bg-[#8fbc8f]/20 text-[#2e7d32] dark:text-[#8fbc8f]' 
+                          : 'bg-[#f1f5f9] dark:bg-[#1a282f] text-[#64748b] dark:text-[#94a3b8]'
                       }`}>
                         {tx.category}
                       </span>
                     </td>
-                    <td className={`text-right pr-2 py-4 font-bold ${
-                      tx.type === 'income' ? 'text-[#3e6842]' : 'text-[#ba1a1a]'
+                    <td className={`text-right pr-2 py-4 font-extrabold ${
+                      tx.type === 'income' ? 'text-[#2e7d32] dark:text-[#4ade80]' : 'text-[#d32f2f] dark:text-[#f87171]'
                     }`}>
                       {tx.type === 'income' ? '+' : '-'} Rp {new Intl.NumberFormat('id-ID').format(tx.amount)}
                     </td>
                     <td className="text-center py-4">
                       <button
                         onClick={() => deleteTransaction(tx.id)}
-                        className="p-1 rounded-lg text-[#ba1a1a] hover:bg-[#ffdad6] transition-colors"
+                        className="p-1.5 rounded-lg text-[#d32f2f] hover:bg-[#ffebee] dark:hover:bg-[#3a1a1a] transition-colors cursor-pointer"
                         title="Hapus Transaksi"
                       >
                         <span className="material-symbols-outlined text-[18px]">delete</span>
@@ -316,9 +362,28 @@ export const CashFlowView: React.FC = () => {
                 ))}
               </tbody>
             </table>
+
+            {/* Bottom link: Lihat Semua Transaksi */}
+            <div className="pt-5 border-t border-[#f1f5f9] dark:border-[#1e2d34] text-center">
+              <button
+                onClick={() => setShowAllTransactions(!showAllTransactions)}
+                className="text-[#18391e] dark:text-[#8fbc8f] hover:text-[#2e7d32] font-bold text-xs sm:text-sm inline-flex items-center gap-1.5 transition-colors cursor-pointer hover:underline"
+              >
+                <span>{showAllTransactions ? 'Sembunyikan Sebagian' : 'Lihat Semua Transaksi'}</span>
+                <span className="material-symbols-outlined text-[18px]">
+                  {showAllTransactions ? 'expand_less' : 'trending_flat'}
+                </span>
+              </button>
+            </div>
           </div>
         )}
       </section>
+
+      {/* Edit Balance Modal */}
+      <EditBalanceModal
+        isOpen={isEditBalanceOpen}
+        onClose={() => setIsEditBalanceOpen(false)}
+      />
     </div>
   );
 };

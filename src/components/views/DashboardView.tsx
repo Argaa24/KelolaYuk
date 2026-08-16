@@ -30,6 +30,36 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+const getGreetingInfo = () => {
+  const hour = new Date().getHours();
+  if (hour >= 4 && hour < 11) {
+    return {
+      greeting: 'Selamat pagi',
+      icon: 'wb_sunny',
+      quote: 'Tarik napas dalam-dalam, keuanganmu berjalan sesuai rencana hari ini. Semuanya terkendali.'
+    };
+  }
+  if (hour >= 11 && hour < 15) {
+    return {
+      greeting: 'Selamat siang',
+      icon: 'light_mode',
+      quote: 'Semangat menjalani aktivitas hari ini! Tetap bijak dalam setiap keputusan finansialmu.'
+    };
+  }
+  if (hour >= 15 && hour < 18) {
+    return {
+      greeting: 'Selamat sore',
+      icon: 'wb_twilight',
+      quote: 'Hari yang produktif! Luangkan waktu sejenak untuk memeriksa catatan pengeluaran harianmu.'
+    };
+  }
+  return {
+    greeting: 'Selamat malam',
+    icon: 'bedtime',
+    quote: 'Istirahat yang cukup untuk malam ini. Semua catatan dan target finansialmu aman tersimpan.'
+  };
+};
+
 const parseDateSafely = (dateStr: string): Date | null => {
   if (!dateStr) return null;
   const d1 = new Date(dateStr);
@@ -54,7 +84,8 @@ export const DashboardView: React.FC = () => {
     setCurrentView,
     setIsQuizOpen,
     bills,
-    transactions
+    transactions,
+    deleteTransaction
   } = useApp();
 
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'category'>('week');
@@ -69,6 +100,13 @@ export const DashboardView: React.FC = () => {
   const totalIncome = transactions
     .filter(t => t.type === 'income')
     .reduce((acc, t) => acc + t.amount, 0);
+
+  const recentExpenses = useMemo(() => {
+    return transactions
+      .filter(t => t.type === 'expense')
+      .slice()
+      .reverse();
+  }, [transactions]);
 
   const expenseChartData = useMemo(() => {
     const expenses = transactions.filter(t => t.type === 'expense');
@@ -123,16 +161,19 @@ export const DashboardView: React.FC = () => {
     }));
   }, [transactions, timeRange]);
 
+  const greetingInfo = useMemo(() => getGreetingInfo(), []);
+  const userName = profile.name ? profile.name.split(' ')[0] : 'Sobat';
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300 pb-16">
       {/* Welcome Banner */}
-      <section className="relative overflow-hidden rounded-[32px] p-8 md:p-12 glass-card">
+      <section className="relative overflow-hidden rounded-[32px] p-8 md:p-10 bg-[#fcf9f2] dark:bg-[#192429] border border-[#eee6d4] dark:border-[#28373f] shadow-xs">
         <div className="relative z-10">
-          <h3 className="text-2xl md:text-3xl font-bold mb-2 text-[#0e1d25]">
-            Selamat datang, {profile.name.split(' ')[0]}.
+          <h3 className="text-2xl md:text-3xl font-extrabold mb-2 text-[#0e1d25] dark:text-[#f1f5f9] tracking-tight">
+            {greetingInfo.greeting}, {userName}.
           </h3>
-          <p className="text-[#424940] text-sm md:text-base max-w-2xl leading-relaxed">
-            Semua fitur siap digunakan dari awal. Catat pemasukan, pengeluaran & target tabungan Anda untuk mulai mengelola keuangan.
+          <p className="text-[#526458] dark:text-[#a0aec0] text-sm md:text-base max-w-2xl leading-relaxed">
+            {greetingInfo.quote}
           </p>
         </div>
       </section>
@@ -140,62 +181,57 @@ export const DashboardView: React.FC = () => {
       {/* Bento Summary Cards */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Net Worth */}
-        <div className="glass-card p-6 md:p-8 rounded-[24px] shadow-xs hover:-translate-y-1 transition-transform duration-300">
-          <div className="flex items-center justify-between mb-6">
-            <span className="material-symbols-outlined text-[#3e6842] bg-[#8fbc8f]/20 p-3 rounded-full text-[24px]">
-              account_balance
-            </span>
-            <span className="text-xs font-bold text-[#3e6842] bg-[#8fbc8f]/10 px-3 py-1 rounded-full">
-              {netWorth === 0 ? 'Mulai dari 0' : 'Total Tabungan + Saldo'}
+        <div className="bg-[#fbf9f4] dark:bg-[#152127] p-6 md:p-7 rounded-[28px] border border-[#ede7d8] dark:border-[#28373f] shadow-xs hover:-translate-y-0.5 transition-transform duration-200">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-10 h-10 rounded-xl bg-[#dcefe1] dark:bg-[#1e4e2b]/30 text-[#1e4e2b] dark:text-[#8fbc8f] flex items-center justify-center">
+              <span className="material-symbols-outlined text-[22px]">home</span>
+            </div>
+            <span className="text-xs font-bold text-[#1e4e2b] dark:text-[#8fbc8f] bg-[#dcefe1] dark:bg-[#1e4e2b]/40 px-3 py-1 rounded-full">
+              {netWorth === 0 ? 'Mulai dari Rp 0' : 'Total Saldo & Tabungan'}
             </span>
           </div>
-          <p className="text-xs md:text-sm font-medium text-[#424940] mb-1">Kekayaan Bersih</p>
-          <h4 className="text-2xl md:text-3xl font-bold text-[#0e1d25]">
+          <p className="text-xs font-semibold text-[#727970] dark:text-[#8a99a8] mb-1">Kekayaan Bersih</p>
+          <h4 className="text-2xl sm:text-[26px] font-extrabold text-[#0e1d25] dark:text-[#f1f5f9]">
             Rp {new Intl.NumberFormat('id-ID').format(netWorth)}
           </h4>
         </div>
 
         {/* Arus Kas */}
-        <div className="glass-card p-6 md:p-8 rounded-[24px] shadow-xs hover:-translate-y-1 transition-transform duration-300">
-          <div className="flex items-center justify-between mb-6">
-            <span className="material-symbols-outlined text-[#3e6842] bg-[#8fbc8f]/20 p-3 rounded-full text-[24px]">
-              payments
-            </span>
-            <div className="flex items-center gap-1 text-[#3e6842]">
-              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
-                check_circle
+        <div className="bg-[#fbf9f4] dark:bg-[#152127] p-6 md:p-7 rounded-[28px] border border-[#ede7d8] dark:border-[#28373f] shadow-xs hover:-translate-y-0.5 transition-transform duration-200">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-10 h-10 rounded-xl bg-[#dcefe1] dark:bg-[#1e4e2b]/30 text-[#1e4e2b] dark:text-[#8fbc8f] flex items-center justify-center">
+              <span className="material-symbols-outlined text-[22px]">payments</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[#1e4e2b] dark:text-[#8fbc8f]">
+              <span className="w-2 h-2 rounded-full bg-[#1e4e2b] dark:bg-[#8fbc8f] inline-block"></span>
+              <span className="text-xs font-bold">
+                {monthlyCashflow >= 0 ? 'Status: Aman' : 'Status: Defisit'}
               </span>
-              <span className="text-xs font-bold">Status: Ready</span>
             </div>
           </div>
-          <p className="text-xs md:text-sm font-medium text-[#424940] mb-1">Arus Kas Bulanan</p>
-          <h4 className="text-2xl md:text-3xl font-bold text-[#0e1d25]">
+          <p className="text-xs font-semibold text-[#727970] dark:text-[#8a99a8] mb-1">Arus Kas Bulanan</p>
+          <h4 className={`text-2xl sm:text-[26px] font-extrabold ${monthlyCashflow < 0 ? 'text-[#ba1a1a]' : 'text-[#0e1d25] dark:text-[#f1f5f9]'}`}>
             Rp {new Intl.NumberFormat('id-ID').format(monthlyCashflow)}
           </h4>
         </div>
 
         {/* Tagihan Berikutnya */}
-        <div className="glass-card p-6 md:p-8 rounded-[24px] shadow-xs hover:-translate-y-1 transition-transform duration-300 border-l-4 border-[#d2ad35]">
-          <div className="flex items-center justify-between mb-6">
-            <span className="material-symbols-outlined text-[#735c00] bg-[#ffe088]/30 p-3 rounded-full text-[24px]">
-              event_repeat
-            </span>
-            <span className="text-xs font-bold text-[#735c00]">
-              {nextBill ? 'Menunggu' : 'Tenang'}
+        <div className="bg-[#fefdfa] dark:bg-[#1a252b] p-6 md:p-7 rounded-[28px] border-2 border-[#f6d788] dark:border-[#967728] shadow-xs hover:-translate-y-0.5 transition-transform duration-200">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-10 h-10 rounded-xl bg-[#fef3c7] dark:bg-[#5c430e]/40 text-[#b45309] dark:text-[#fcd34d] flex items-center justify-center">
+              <span className="material-symbols-outlined text-[22px]">calendar_today</span>
+            </div>
+            <span className="text-xs font-bold text-[#92400e] dark:text-[#fcd34d] bg-[#fef3c7] dark:bg-[#5c430e]/60 px-3 py-1 rounded-full">
+              {nextBill ? (nextBill.dueDate || 'Mendatang') : 'Tidak Ada Tagihan'}
             </span>
           </div>
-          <p className="text-xs md:text-sm font-medium text-[#424940] mb-1">Tagihan Terdekat</p>
-          {nextBill ? (
-            <>
-              <h4 className="text-xl md:text-2xl font-bold text-[#0e1d25] truncate">{nextBill.name}</h4>
-              <p className="text-xs md:text-sm text-[#424940] mt-1 font-medium">Rp {new Intl.NumberFormat('id-ID').format(nextBill.amount)}</p>
-            </>
-          ) : (
-            <>
-              <h4 className="text-lg md:text-xl font-bold text-[#0e1d25]">Tidak Ada Tagihan</h4>
-              <p className="text-xs md:text-sm text-[#727970] mt-1 font-medium">Belum ada tagihan mendatang</p>
-            </>
-          )}
+          <p className="text-xs font-semibold text-[#727970] dark:text-[#8a99a8] mb-1">Tagihan Terdekat</p>
+          <h4 className="text-xl sm:text-2xl font-extrabold text-[#0e1d25] dark:text-[#f1f5f9] truncate">
+            {nextBill ? nextBill.name : 'Belum Ada Tagihan'}
+          </h4>
+          <p className="text-xs font-medium text-[#727970] dark:text-[#8a99a8] mt-1">
+            {nextBill ? `Rp ${new Intl.NumberFormat('id-ID').format(nextBill.amount)}` : 'Semua tagihan lunas atau belum ada'}
+          </p>
         </div>
       </section>
 
@@ -288,6 +324,66 @@ export const DashboardView: React.FC = () => {
                   />
                 </AreaChart>
               </ResponsiveContainer>
+            )}
+          </div>
+
+          {/* Riwayat Rincian Pengeluaran */}
+          <div className="mt-6 pt-5 border-t border-[#c2c9be]/30">
+            <div className="flex items-center justify-between mb-3">
+              <h6 className="text-sm font-bold text-[#0e1d25] flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[18px] text-[#ba1a1a]">receipt_long</span>
+                Riwayat Rincian Pengeluaran ({recentExpenses.length})
+              </h6>
+              {recentExpenses.length > 0 && (
+                <button
+                  onClick={() => setCurrentView('cashflow')}
+                  className="text-xs font-bold text-[#3e6842] hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <span>Lihat Semua</span>
+                  <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                </button>
+              )}
+            </div>
+
+            {recentExpenses.length === 0 ? (
+              <p className="text-xs text-[#727970] italic bg-[#f4f8f5]/60 p-3 rounded-xl border border-dashed border-[#c2c9be] text-center">
+                Belum ada transaksi pengeluaran yang dicatat.
+              </p>
+            ) : (
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                {recentExpenses.map((tx) => (
+                  <div 
+                    key={tx.id} 
+                    className="flex items-center justify-between p-3 rounded-xl bg-white/80 hover:bg-white border border-[#e2e8f0] shadow-2xs transition-all"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-[#ba1a1a]/10 text-[#ba1a1a] flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined text-[16px]">trending_down</span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-[#0e1d25] truncate">{tx.description}</p>
+                        <p className="text-[11px] text-[#727970] font-medium mt-0.5 flex items-center gap-2">
+                          <span>{tx.date}</span>
+                          <span className="inline-block w-1 h-1 rounded-full bg-[#727970]"></span>
+                          <span className="text-[#3e6842] font-semibold">{tx.category}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 ml-2">
+                      <span className="text-xs md:text-sm font-extrabold text-[#ba1a1a]">
+                        - Rp {new Intl.NumberFormat('id-ID').format(tx.amount)}
+                      </span>
+                      <button
+                        onClick={() => deleteTransaction(tx.id)}
+                        className="p-1 text-[#ba1a1a]/60 hover:text-[#ba1a1a] hover:bg-[#ffdad6] rounded-lg transition-colors cursor-pointer"
+                        title="Hapus Transaksi"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">delete</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>

@@ -71,6 +71,7 @@ export interface Article {
 }
 
 export interface UserProfile {
+  uid?: string;
   name: string;
   title: string;
   level: string;
@@ -83,9 +84,10 @@ export interface UserAccount {
   id: string;
   name: string;
   email: string;
-  password: string;
+  password?: string;
   avatarUrl: string;
   title: string;
   level: string;
   createdAt: string;
 }
+

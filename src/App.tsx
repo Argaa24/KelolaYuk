@@ -20,9 +20,11 @@ import { AddSavingsModal } from './components/modals/AddSavingsModal';
 import { AddGoalModal } from './components/modals/AddGoalModal';
 import { AddBillModal } from './components/modals/AddBillModal';
 import { QuizModal } from './components/modals/QuizModal';
+import { ConfirmDeleteModal } from './components/modals/ConfirmDeleteModal';
+import { EditProfileModal } from './components/modals/EditProfileModal';
 
 const MainContent: React.FC = () => {
-  const { currentView } = useApp();
+  const { currentView, profile } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const renderView = () => {
@@ -48,8 +50,18 @@ const MainContent: React.FC = () => {
     }
   };
 
+  // If in auth view and not logged in, render full-screen AuthView without Sidebar & Header for initial onboarding
+  if (currentView === 'auth' && !profile.isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-[#f4faff] dark:bg-[#0c1418] text-[#0e1d25] dark:text-[#f1f5f9]">
+        <AuthView />
+        <Toast />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#f4faff] text-[#0e1d25]">
+    <div className="min-h-screen bg-[#f4faff] dark:bg-[#0c1418] text-[#0e1d25] dark:text-[#f1f5f9]">
       {/* Navigation Sidebar */}
       <Sidebar 
         isOpenMobile={isMobileMenuOpen} 
@@ -72,6 +84,8 @@ const MainContent: React.FC = () => {
       <AddGoalModal />
       <AddBillModal />
       <QuizModal />
+      <ConfirmDeleteModal />
+      <EditProfileModal />
 
       {/* Toast Notifications */}
       <Toast />
