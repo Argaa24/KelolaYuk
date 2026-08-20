@@ -49,21 +49,17 @@ export const AddTransactionModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="glass-panel w-full max-w-lg bg-[#FAF8F5]/95 rounded-2xl p-6 md:p-8 overflow-hidden relative shadow-2xl border border-white/50">
-        {/* Decorative ambient gradients */}
-        <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#8fbc8f] rounded-full mix-blend-multiply filter blur-3xl opacity-20 pointer-events-none"></div>
-        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-[#daebf5] rounded-full mix-blend-multiply filter blur-3xl opacity-50 pointer-events-none"></div>
-
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="w-full max-w-lg bg-white dark:bg-[#162228] rounded-2xl p-6 md:p-8 overflow-hidden relative shadow-2xl border border-[#e2e8f0] dark:border-[#28373f]">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 relative z-10">
           <div>
-            <h2 className="font-bold text-2xl text-[#0e1d25]">Tambah Transaksi</h2>
-            <p className="text-xs text-[#424940] mt-0.5">Catat setiap aliran uangmu dengan tenang.</p>
+            <h2 className="font-bold text-2xl text-[#0e1d25] dark:text-[#f1f5f9]">Tambah Transaksi</h2>
+            <p className="text-xs text-[#526458] dark:text-[#a0aec0] mt-0.5">Catat setiap aliran uangmu dengan tenang.</p>
           </div>
           <button 
             onClick={() => setIsAddTxOpen(false)}
-            className="p-2 rounded-full hover:bg-black/5 text-[#424940] transition-colors"
+            className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-[#20313a] text-[#526458] dark:text-[#a0aec0] transition-colors cursor-pointer"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>
           </button>
@@ -71,7 +67,7 @@ export const AddTransactionModal: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
           {/* Type Switcher */}
-          <div className="flex p-1 bg-[#e1dfdc]/50 rounded-xl">
+          <div className="flex p-1 bg-slate-100 dark:bg-[#20313a] rounded-xl">
             <button
               type="button"
               onClick={() => {
@@ -126,18 +122,18 @@ export const AddTransactionModal: React.FC = () => {
             </div>
           </div>
 
-          <hr className="border-[#d5e5ef]" />
+          <hr className="border-[#e2e8f0] dark:border-[#28373f]" />
 
           {/* Category */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#424940] uppercase tracking-wider block">
+            <label className="text-xs font-semibold text-[#526458] dark:text-[#a0aec0] uppercase tracking-wider block">
               Kategori
             </label>
             <div className="relative">
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value)}
-                className="w-full appearance-none bg-white border border-[#c2c9be] text-[#0e1d25] font-medium rounded-xl px-4 py-3 focus:outline-none focus:border-[#3e6842] focus:ring-1 focus:ring-[#3e6842] transition-colors"
+                className="w-full appearance-none bg-white dark:bg-[#111a1f] border border-[#e2e8f0] dark:border-[#28373f] text-[#0e1d25] dark:text-[#f1f5f9] font-medium rounded-xl px-4 py-3 focus:outline-none focus:border-[#3e6842] dark:focus:border-[#8fbc8f] focus:ring-1 focus:ring-[#3e6842] transition-colors"
               >
                 {type === 'expense' ? (
                   <>
@@ -158,7 +154,7 @@ export const AddTransactionModal: React.FC = () => {
                   </>
                 )}
               </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-[#727970]">
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-[#727970] dark:text-[#8a99a8]">
                 <span className="material-symbols-outlined">expand_more</span>
               </div>
             </div>
@@ -167,34 +163,34 @@ export const AddTransactionModal: React.FC = () => {
           {/* Date & Time */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#424940] uppercase tracking-wider block">Tanggal</label>
+              <label className="text-xs font-semibold text-[#526458] dark:text-[#a0aec0] uppercase tracking-wider block">Tanggal</label>
               <input
                 type="date"
                 value={date}
                 onChange={e => setDate(e.target.value)}
-                className="w-full bg-white border border-[#c2c9be] text-[#0e1d25] font-medium rounded-xl px-3.5 py-3 focus:outline-none focus:border-[#3e6842] text-sm"
+                className="w-full bg-white dark:bg-[#111a1f] border border-[#e2e8f0] dark:border-[#28373f] text-[#0e1d25] dark:text-[#f1f5f9] font-medium rounded-xl px-3.5 py-3 focus:outline-none focus:border-[#3e6842] dark:focus:border-[#8fbc8f] text-sm"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#424940] uppercase tracking-wider block">Waktu</label>
+              <label className="text-xs font-semibold text-[#526458] dark:text-[#a0aec0] uppercase tracking-wider block">Waktu</label>
               <input
                 type="time"
                 value={time}
                 onChange={e => setTime(e.target.value)}
-                className="w-full bg-white border border-[#c2c9be] text-[#0e1d25] font-medium rounded-xl px-3.5 py-3 focus:outline-none focus:border-[#3e6842] text-sm"
+                className="w-full bg-white dark:bg-[#111a1f] border border-[#e2e8f0] dark:border-[#28373f] text-[#0e1d25] dark:text-[#f1f5f9] font-medium rounded-xl px-3.5 py-3 focus:outline-none focus:border-[#3e6842] dark:focus:border-[#8fbc8f] text-sm"
               />
             </div>
           </div>
 
           {/* Notes */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#424940] uppercase tracking-wider block">Catatan Tambahan</label>
+            <label className="text-xs font-semibold text-[#526458] dark:text-[#a0aec0] uppercase tracking-wider block">Catatan Tambahan</label>
             <textarea
               rows={2}
               value={notes}
               onChange={e => setNotes(e.target.value)}
               placeholder="Tulis rincian atau catatan..."
-              className="w-full bg-white border border-[#c2c9be] text-[#0e1d25] text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#3e6842] resize-none"
+              className="w-full bg-white dark:bg-[#111a1f] border border-[#e2e8f0] dark:border-[#28373f] text-[#0e1d25] dark:text-[#f1f5f9] text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#3e6842] dark:focus:border-[#8fbc8f] resize-none"
             />
           </div>
 
@@ -203,13 +199,13 @@ export const AddTransactionModal: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsAddTxOpen(false)}
-              className="flex-1 py-3 px-4 rounded-xl border border-[#727970] text-[#424940] font-semibold text-sm hover:bg-black/5 transition-colors"
+              className="flex-1 py-3 px-4 rounded-xl border border-[#e2e8f0] dark:border-[#28373f] text-[#526458] dark:text-[#a0aec0] font-semibold text-sm hover:bg-slate-50 dark:hover:bg-[#1c2c34] transition-colors cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="flex-[2] bg-[#3e6842] text-white font-bold text-sm py-3 px-4 rounded-xl shadow-lg shadow-[#3e6842]/20 hover:bg-[#3e6842]/90 active:scale-98 transition-all flex items-center justify-center gap-2"
+              className="flex-[2] bg-[#1e4e2b] hover:bg-[#1e4e2b]/90 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-lg shadow-[#1e4e2b]/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <span className="material-symbols-outlined text-[18px]">check</span>
               <span>Simpan Transaksi</span>
