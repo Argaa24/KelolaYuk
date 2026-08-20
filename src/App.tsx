@@ -50,8 +50,8 @@ const MainContent: React.FC = () => {
     }
   };
 
-  // If in auth view and not logged in, render full-screen AuthView without Sidebar & Header for initial onboarding
-  if (currentView === 'auth' && !profile.isLoggedIn) {
+  // If user is not logged in, always render full-screen AuthView (Login / Register) without Sidebar & Header
+  if (!profile.isLoggedIn) {
     return (
       <div className="min-h-screen bg-[#f4faff] dark:bg-[#0c1418] text-[#0e1d25] dark:text-[#f1f5f9]">
         <AuthView />

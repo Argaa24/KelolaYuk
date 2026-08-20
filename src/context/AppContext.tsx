@@ -87,6 +87,7 @@ interface AppContextType {
   loginWithGoogle: () => Promise<{ success: boolean; message: string }>;
   sendPasswordReset: (email: string) => Promise<{ success: boolean; message: string }>;
   logoutUser: () => Promise<void>;
+  continueAsGuest: () => void;
   updateUserProfile: (data: { name: string; avatarUrl?: string; title?: string }) => Promise<{ success: boolean; message: string }>;
   
   // Financial State
@@ -146,28 +147,42 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Force clean zero data migration for legacy localStorage
-if (typeof window !== 'undefined' && !localStorage.getItem('mm_fresh_zero_v4')) {
+// Force clean zero data migration and logout default for fresh onboarding
+if (typeof window !== 'undefined' && !localStorage.getItem('mm_fresh_auth_v1')) {
+  localStorage.removeItem('mm_profile');
+  localStorage.removeItem('mm_accounts');
   Object.keys(localStorage).forEach(key => {
     if (key.startsWith('mm_transactions') || key.startsWith('mm_goals') || key.startsWith('mm_bills') || key.startsWith('mm_budget')) {
       localStorage.removeItem(key);
     }
   });
-  localStorage.setItem('mm_fresh_zero_v4', 'true');
+  localStorage.setItem('mm_fresh_auth_v1', 'true');
 }
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentView, setCurrentView] = useState<ViewType>('dashboard');
+  const [profile, setProfile] = useState<UserProfile>(() => {
+    if (typeof window === 'undefined') return initialProfile;
+    const saved = localStorage.getItem('mm_profile');
+    return saved ? JSON.parse(saved) : initialProfile;
+  });
+
+  const [currentView, setCurrentView] = useState<ViewType>(() => {
+    if (typeof window !== 'undefined') {
+      const savedProfile = localStorage.getItem('mm_profile');
+      if (savedProfile) {
+        try {
+          const parsed = JSON.parse(savedProfile);
+          if (parsed.isLoggedIn) return 'dashboard';
+        } catch {}
+      }
+    }
+    return profile.isLoggedIn ? 'dashboard' : 'auth';
+  });
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   
   const [accounts, setAccounts] = useState<UserAccount[]>(() => {
     const saved = localStorage.getItem('mm_accounts');
     return saved ? JSON.parse(saved) : DEFAULT_USERS;
-  });
-
-  const [profile, setProfile] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('mm_profile');
-    return saved ? JSON.parse(saved) : initialProfile;
   });
 
   const activeEmailRef = useRef<string>(profile.isLoggedIn ? profile.email : '');
@@ -752,6 +767,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const continueAsGuest = () => {
+    const guestUid = 'guest_' + Date.now();
+    const guestProfile: UserProfile = {
+      uid: guestUid,
+      name: 'Pengguna Tamu',
+      title: 'Perintis Keuangan',
+      level: 'Tingkat 1 - Perintis',
+      email: 'tamu@kelolayuk.id',
+      avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=Guest_${Date.now()}`,
+      isLoggedIn: true
+    };
+    activeUidRef.current = guestUid;
+    activeEmailRef.current = 'tamu@kelolayuk.id';
+    switchAccountData('tamu@kelolayuk.id');
+    setProfile(guestProfile);
+    setCurrentView('dashboard');
+    showToast('Masuk sebagai Pengguna Tamu (Data Lokal). Buat akun kapan saja untuk simpan di Cloud!');
+  };
+
   const logoutUser = async () => {
     try {
       await signOut(auth);
@@ -763,12 +797,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     switchAccountData(null);
     setProfile({
       name: '',
-      title: 'Mindful Saver',
-      level: 'Zen Master',
+      title: 'Perintis Keuangan',
+      level: 'Tingkat 1 - Perintis',
       email: '',
-      avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAeXlv6AkyxIMR7H8tTjglThq9MFgCYBDOXaFX1klKEM-PCLNXLltBULq2IXwDi1-_6Gc7frIpxU7xFqgVR6ixqCTvkn6Jj8Mp5o28AErnHDUWieJc-DShOeNOSFxh5AZHUA3ixOprh88bwM1DrQqx1F-NoHr2nOdk7uWBd5gQj0yXoE0IdI-IOPnBqynkDWTbWzFDJP1tnuDf85AlslRh3M1RYYqRUH2FMJbjmMbYCIVvkLsDF4X-E',
+      avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=KelolaYukGuest',
       isLoggedIn: false
     });
+    setCurrentView('auth');
     showToast('Anda telah keluar dari akun.');
   };
 
@@ -1067,6 +1102,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         loginWithGoogle,
         sendPasswordReset,
         logoutUser,
+        continueAsGuest,
         updateUserProfile,
         resetAllData,
         transactions,

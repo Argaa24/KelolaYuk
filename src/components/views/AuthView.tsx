@@ -11,6 +11,7 @@ export const AuthView: React.FC = () => {
     loginWithGoogle,
     sendPasswordReset,
     logoutUser,
+    continueAsGuest,
     setIsEditProfileOpen,
     accounts 
   } = useApp();
@@ -300,10 +301,7 @@ export const AuthView: React.FC = () => {
           </div>
 
           <button
-            onClick={() => {
-              setCurrentView('dashboard');
-              showToast('Masuk dalam mode Penjelajah / Tamu');
-            }}
+            onClick={() => continueAsGuest()}
             className="text-xs font-bold text-[#1e4e2b] dark:text-[#8fbc8f] hover:underline flex items-center gap-1 cursor-pointer shrink-0"
           >
             <span>Jelajahi Mode Demo / Tamu</span>

@@ -1,12 +1,12 @@
 import { Transaction, SavingsGoal, Bill, BudgetItem, Article, UserProfile } from '../types';
 
 export const initialProfile: UserProfile = {
-  name: 'Budi Santoso',
+  name: '',
   title: 'Perintis Keuangan',
-  email: 'budi.santoso@kelolayuk.id',
-  avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Budi',
-  level: 'Tingkat 3 - Sadar Finansial',
-  isLoggedIn: true
+  email: '',
+  avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=KelolaYukGuest',
+  level: 'Tingkat 1 - Perintis',
+  isLoggedIn: false
 };
 
 export const initialTransactions: Transaction[] = [];
