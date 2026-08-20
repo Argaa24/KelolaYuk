@@ -237,7 +237,7 @@ export const AuthView: React.FC = () => {
                 KelolaYuk
               </h1>
               <p className="text-xs text-[#727970] dark:text-[#a0aec0]">
-                Asisten Finansial Cerdas & Cloud Database Real-time
+                Kelola Uang, Kembangkan Usaha
               </p>
             </div>
           </div>
@@ -249,7 +249,7 @@ export const AuthView: React.FC = () => {
               <span>Terintegrasi Firebase Cloud Firestore & Auth</span>
             </span>
             <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0e1d25] dark:text-[#f1f5f9] tracking-tight leading-snug">
-              Kelola Uang Lebih Tenang, Capai Impian Lebih Cepat.
+              Kelola Uang, Kembangkan Usaha.
             </h2>
             <p className="text-xs sm:text-sm text-[#424940] dark:text-[#a0aec0] leading-relaxed max-w-xl">
               Pencatatan arus kas terstruktur, target tabungan otomatis, dan pengingat tagihan tersinkronisasi langsung ke Cloud Database Firebase secara real-time.

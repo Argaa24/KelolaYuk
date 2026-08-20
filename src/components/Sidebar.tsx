@@ -53,7 +53,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile = false, onCloseM
                   KelolaYuk
                 </h1>
                 <p className="text-[11px] font-medium text-[#5f6c7b] dark:text-[#a0aec0] mt-0.5">
-                  Kelola Usaha, Untung Nyata
+                  Kelola Uang, Kembangkan Usaha
                 </p>
               </div>
             </div>
